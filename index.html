@@ -17,46 +17,58 @@
             <p class="subtitle">独立行政法人・政府系金融機関 関係性マップ ─ 多軸可視化版</p>
         </header>
 
+        <!-- ビュー切替タブ -->
+        <div class="view-tabs">
+            <button class="view-tab active" data-view="network">🌐 ネットワーク</button>
+            <button class="view-tab" data-view="treemap">📊 ツリーマップ</button>
+            <button class="view-tab" data-view="bubble">🫧 バブルチャート</button>
+            <button class="view-tab" data-view="scatter">📈 散布図</button>
+            <button class="view-tab" data-view="ranking">🏆 ランキング</button>
+        </div>
+
         <div class="controls">
             <div class="control-group">
-                <label>🎨 可視化モード:</label>
+                <label>🎨 フィルター:</label>
                 <select id="filterType">
-                    <optgroup label="📊 分析ビュー">
-                        <option value="scatter">🎯 年収×資産スキャッター</option>
-                        <option value="timeline">⏱️ システム更改タイムライン</option>
-                        <option value="heatmap">🔥 ヒートマップグリッド</option>
-                    </optgroup>
-                    <optgroup label="🌐 ネットワークビュー">
-                        <option value="all" selected>すべて表示</option>
-                        <option value="vendorHub">🌐 ベンダー中心性分析</option>
-                        <option value="culture">🌀 組織風土クラスター</option>
-                        <option value="category">📁 法人種別</option>
-                        <option value="investment">💰 投資余力別</option>
-                        <option value="ai">🤖 AI活用状況</option>
-                        <option value="bidStyle">📋 入札傾向別</option>
-                        <option value="vendor">🏢 主要ベンダー別</option>
-                    </optgroup>
+                    <option value="all">すべて表示</option>
+                    <option value="financial">💰 金融機関のみ</option>
+                    <option value="vendor">🏢 主要ベンダー別</option>
+                    <option value="category">📁 法人種別</option>
+                    <option value="investment">💎 投資余力別</option>
+                    <option value="ai">🤖 AI活用状況</option>
                 </select>
             </div>
-            <div class="control-group">
+            <div class="control-group" id="nodeSizeControl">
                 <label>📐 ノードサイズ:</label>
                 <select id="nodeSize">
                     <option value="employees">職員数</option>
                     <option value="assets">総資産</option>
-                    <option value="salary">年収</option>
                     <option value="uniform">均一</option>
                 </select>
             </div>
             <div class="control-group">
                 <button id="resetZoom" class="btn">🔄 リセット</button>
-                <button id="toggleLabels" class="btn">📝 ラベル表示</button>
+                <button id="toggleLabels" class="btn">📝 ラベル</button>
                 <button id="exportImage" class="btn btn-export">📷 画像出力</button>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="network-container" id="networkContainer">
-                <svg id="networkSvg"></svg>
+            <div class="visualization-container" id="visualizationContainer">
+                <!-- ネットワークビュー -->
+                <div class="view-content active" id="networkView">
+                    <div class="network-container" id="networkContainer">
+                        <svg id="networkSvg"></svg>
+                    </div>
+                </div>
+                <!-- ツリーマップビュー -->
+                <div class="view-content" id="treemapView"></div>
+                <!-- バブルチャートビュー -->
+                <div class="view-content" id="bubbleView"></div>
+                <!-- 散布図ビュー -->
+                <div class="view-content" id="scatterView"></div>
+                <!-- ランキングビュー -->
+                <div class="view-content" id="rankingView"></div>
             </div>
 
             <div class="info-panel" id="infoPanel">
@@ -97,17 +109,75 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script src="data.js"></script>
+    <script src="views.js"></script>
     <script src="script.js"></script>
     <script>
-        // 総資産合計を計算して表示
+        // ビュー切替の初期化
         document.addEventListener('DOMContentLoaded', () => {
-            const orgs = window.detailedOrganizations || [];
+            const tabs = document.querySelectorAll('.view-tab');
+            const views = document.querySelectorAll('.view-content');
+            const nodeSizeControl = document.getElementById('nodeSizeControl');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const viewName = tab.dataset.view;
+
+                    // タブのアクティブ状態を更新
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // ビューの表示/非表示を切替
+                    views.forEach(v => v.classList.remove('active'));
+                    document.getElementById(viewName + 'View').classList.add('active');
+
+                    // ノードサイズコントロールの表示制御
+                    if (viewName === 'network') {
+                        nodeSizeControl.style.display = 'flex';
+                    } else {
+                        nodeSizeControl.style.display = 'none';
+                    }
+
+                    // ビューをレンダリング
+                    renderView(viewName);
+                });
+            });
+
+            // フィルター変更時にビューを再描画
+            document.getElementById('filterType').addEventListener('change', (e) => {
+                window.visualizationViews.currentFilter = e.target.value;
+                const activeTab = document.querySelector('.view-tab.active');
+                renderView(activeTab.dataset.view);
+            });
+
+            // 総資産合計を計算
+            const orgs = window.organizationsData || [];
             const totalAssets = orgs.reduce((sum, org) => sum + (org.assets || 0), 0);
             const formatted = totalAssets >= 10000
                 ? (totalAssets / 10000).toFixed(1) + '兆円'
                 : totalAssets.toLocaleString() + '億円';
             document.getElementById('totalAssets').textContent = formatted;
         });
+
+        function renderView(viewName) {
+            const container = document.getElementById(viewName + 'View');
+            const vv = window.visualizationViews;
+
+            switch (viewName) {
+                case 'treemap':
+                    vv.renderTreemap(container);
+                    break;
+                case 'bubble':
+                    vv.renderBubbleChart(container);
+                    break;
+                case 'scatter':
+                    vv.renderScatterPlot(container);
+                    break;
+                case 'ranking':
+                    vv.renderRanking(container);
+                    break;
+                // networkはNetworkNavigatorクラスで管理
+            }
+        }
     </script>
 </body>
 
