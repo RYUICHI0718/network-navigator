@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業データ ネットワークナビゲーター</title>
+    <meta name="description" content="独立行政法人・政府系金融機関の関係性を多軸で可視化するインタラクティブツール">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔗 企業データ ネットワークナビゲーター</h1>
+            <p class="subtitle">独立行政法人・政府系金融機関 関係性マップ ─ 多軸可視化版</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>🎨 可視化モード:</label>
+                <select id="filterType">
+                    <optgroup label="📊 分析ビュー">
+                        <option value="scatter">🎯 年収×資産スキャッター</option>
+                        <option value="timeline">⏱️ システム更改タイムライン</option>
+                        <option value="heatmap">🔥 ヒートマップグリッド</option>
+                    </optgroup>
+                    <optgroup label="🌐 ネットワークビュー">
+                        <option value="all" selected>すべて表示</option>
+                        <option value="vendorHub">🌐 ベンダー中心性分析</option>
+                        <option value="culture">🌀 組織風土クラスター</option>
+                        <option value="category">📁 法人種別</option>
+                        <option value="investment">💰 投資余力別</option>
+                        <option value="ai">🤖 AI活用状況</option>
+                        <option value="bidStyle">📋 入札傾向別</option>
+                        <option value="vendor">🏢 主要ベンダー別</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>📐 ノードサイズ:</label>
+                <select id="nodeSize">
+                    <option value="employees">職員数</option>
+                    <option value="assets">総資産</option>
+                    <option value="salary">年収</option>
+                    <option value="uniform">均一</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button id="resetZoom" class="btn">🔄 リセット</button>
+                <button id="toggleLabels" class="btn">📝 ラベル表示</button>
+                <button id="exportImage" class="btn btn-export">📷 画像出力</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="network-container" id="networkContainer">
+                <svg id="networkSvg"></svg>
+            </div>
+
+            <div class="info-panel" id="infoPanel">
+                <div class="panel-header">
+                    <h3>📊 組織情報</h3>
+                </div>
+                <div class="panel-content" id="panelContent">
+                    <p class="placeholder">ノードをクリックすると詳細が表示されます</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend" id="legend">
+            <h4>凡例</h4>
+            <div class="legend-items" id="legendItems"></div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">組織数</span>
+                <span class="stat-value" id="totalNodes">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">接続数</span>
+                <span class="stat-value" id="totalLinks">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">クラスター</span>
+                <span class="stat-value" id="totalClusters">0</span>
+            </div>
+            <div class="stat-item highlight-stat">
+                <span class="stat-label">総資産合計</span>
+                <span class="stat-value" id="totalAssets">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // 総資産合計を計算して表示
+        document.addEventListener('DOMContentLoaded', () => {
+            const orgs = window.detailedOrganizations || [];
+            const totalAssets = orgs.reduce((sum, org) => sum + (org.assets || 0), 0);
+            const formatted = totalAssets >= 10000
+                ? (totalAssets / 10000).toFixed(1) + '兆円'
+                : totalAssets.toLocaleString() + '億円';
+            document.getElementById('totalAssets').textContent = formatted;
+        });
+    </script>
+</body>
+
+</html>
