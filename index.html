@@ -20,8 +20,9 @@
         <!-- ビュー切替タブ -->
         <div class="view-tabs">
             <button class="view-tab active" data-view="network">🌐 ネットワーク</button>
+            <button class="view-tab" data-view="evaluation">🎯 5軸評価</button>
             <button class="view-tab" data-view="treemap">📊 ツリーマップ</button>
-            <button class="view-tab" data-view="bubble">🫧 バブルチャート</button>
+            <button class="view-tab" data-view="bubble">🫧 バブル</button>
             <button class="view-tab" data-view="scatter">📈 散布図</button>
             <button class="view-tab" data-view="ranking">🏆 ランキング</button>
         </div>
@@ -61,6 +62,8 @@
                         <svg id="networkSvg"></svg>
                     </div>
                 </div>
+                <!-- 5軸評価ビュー -->
+                <div class="view-content" id="evaluationView"></div>
                 <!-- ツリーマップビュー -->
                 <div class="view-content" id="treemapView"></div>
                 <!-- バブルチャートビュー -->
@@ -163,6 +166,9 @@
             const vv = window.visualizationViews;
 
             switch (viewName) {
+                case 'evaluation':
+                    vv.renderEvaluation(container);
+                    break;
                 case 'treemap':
                     vv.renderTreemap(container);
                     break;

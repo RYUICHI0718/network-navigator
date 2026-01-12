@@ -447,6 +447,115 @@ function normalizeBidStyle(bidStyle) {
     return "一般競争入札";
 }
 
+// 5軸評価スコア計算（AI提案向け評価フレームワーク）
+// 各項目: -5（撤退・静観）〜 +5（攻めるべき）
+
+const evaluationAxes = [
+    { id: 'physical', name: '物理適合', description: 'AIで本質的課題が解決できるか？' },
+    { id: 'urgency', name: '切迫度', description: '今期中に導入する理由があるか？' },
+    { id: 'nttAffinity', name: 'NTT親和性', description: 'NTTである必然性があるか？' },
+    { id: 'itLiteracy', name: '現場IT力', description: '導入して定着するか？' },
+    { id: 'budget', name: '予算規模', description: '営業で利益が出るか？' }
+];
+
+// 各組織の5軸スコアを計算
+function calculateEvaluationScores(org) {
+    const scores = {};
+
+    // ① 物理適合: 金融・事務系は高い、物理作業中心は低い
+    if (org.business?.includes('金融') || org.business?.includes('年金') ||
+        org.business?.includes('審査') || org.business?.includes('保険') ||
+        org.business?.includes('運用') || org.business?.includes('保証')) {
+        scores.physical = 5;
+    } else if (org.business?.includes('交流') || org.business?.includes('教育')) {
+        scores.physical = 3;
+    } else {
+        scores.physical = 2;
+    }
+
+    // ② 切迫度: システム更改予定、法改正対応等
+    if (org.systemRenewal?.includes('2025') || org.systemRenewal?.includes('刷新中') ||
+        org.systemRenewal?.includes('再構築') || org.systemRenewal?.includes('更新中')) {
+        scores.urgency = 5;
+    } else if (org.systemRenewal?.includes('進行中') || org.systemRenewal?.includes('構築中')) {
+        scores.urgency = 4;
+    } else if (org.ai === 'なし' && org.investment !== '中') {
+        scores.urgency = 3;
+    } else {
+        scores.urgency = 1;
+    }
+
+    // ③ NTT親和性: 機密情報、金融、官公庁はセキュリティ要件高い
+    const nttVendors = ['NTTデータ', 'NTTデータ経営研究所'];
+    const hasNttVendor = org.vendors?.some(v => nttVendors.some(nv => v.includes('NTT')));
+
+    if (hasNttVendor) {
+        scores.nttAffinity = 5;
+    } else if (org.category === '特殊法人' || org.category === '中期目標管理法人') {
+        if (org.business?.includes('年金') || org.business?.includes('金融')) {
+            scores.nttAffinity = 5;
+        } else {
+            scores.nttAffinity = 4;
+        }
+    } else if (org.category === '特殊会社') {
+        if (org.business?.includes('金融') || org.business?.includes('保険')) {
+            scores.nttAffinity = 4;
+        } else {
+            scores.nttAffinity = 3;
+        }
+    } else {
+        scores.nttAffinity = 2;
+    }
+
+    // ④ 現場IT力: 専門職・事務職中心、AI導入済みは高い
+    if (org.ai === 'あり') {
+        scores.itLiteracy = 5;
+    } else if (org.ai === '検討中') {
+        scores.itLiteracy = 3;
+    } else {
+        scores.itLiteracy = 1;
+    }
+
+    // 文化による調整
+    if (org.culture?.includes('先進的') || org.culture?.includes('DX推進')) {
+        scores.itLiteracy = Math.min(5, scores.itLiteracy + 1);
+    }
+    if (org.culture?.includes('保守的')) {
+        scores.itLiteracy = Math.max(-3, scores.itLiteracy - 2);
+    }
+
+    // ⑤ 予算規模: 投資余力と利益状況
+    if (org.investment === '極めて高い') {
+        scores.budget = 5;
+    } else if (org.investment === '高') {
+        scores.budget = 4;
+    } else if (org.investment === '中') {
+        scores.budget = 2;
+    } else {
+        scores.budget = 0;
+    }
+
+    // 利益状況による調整
+    if (org.profitStatus === '黒字' && org.profit > 500) {
+        scores.budget = Math.min(5, scores.budget + 1);
+    }
+
+    // 総合スコア計算
+    scores.total = scores.physical + scores.urgency + scores.nttAffinity +
+        scores.itLiteracy + scores.budget;
+
+    return scores;
+}
+
+// 評価ランク判定
+function getEvaluationRank(totalScore) {
+    if (totalScore >= 20) return { rank: 'S', label: '最優先', color: '#ff6b9d' };
+    if (totalScore >= 16) return { rank: 'A', label: '要攻略', color: '#00ff88' };
+    if (totalScore >= 12) return { rank: 'B', label: '検討', color: '#00d4ff' };
+    if (totalScore >= 8) return { rank: 'C', label: '様子見', color: '#ffb800' };
+    return { rank: 'D', label: '静観', color: '#8892a6' };
+}
+
 // データをエクスポート
 window.detailedOrganizations = detailedOrganizations;
 window.organizationsData = detailedOrganizations; // 互換性のため
@@ -459,3 +568,7 @@ window.bidStyles = bidStyles;
 window.vendorColorMap = vendorColorMap;
 window.classifyCulture = classifyCulture;
 window.normalizeBidStyle = normalizeBidStyle;
+window.evaluationAxes = evaluationAxes;
+window.calculateEvaluationScores = calculateEvaluationScores;
+window.getEvaluationRank = getEvaluationRank;
+

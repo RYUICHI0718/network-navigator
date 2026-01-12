@@ -413,6 +413,291 @@ class VisualizationViews {
             });
     }
 
+    // ===== 5軸評価ビュー =====
+    renderEvaluation(container) {
+        const data = this.getFilteredData();
+
+        d3.select(container).selectAll('*').remove();
+
+        const wrapper = d3.select(container)
+            .append('div')
+            .attr('class', 'evaluation-wrapper');
+
+        // ヘッダー説明
+        const header = wrapper.append('div')
+            .attr('class', 'evaluation-header');
+
+        header.append('h3')
+            .text('🎯 AI提案5軸評価ダッシュボード');
+
+        header.append('p')
+            .attr('class', 'evaluation-subtitle')
+            .text('各組織のAI提案適性を5軸で評価。クリックでレーダーチャート表示');
+
+        // 組織カード一覧
+        const cardsContainer = wrapper.append('div')
+            .attr('class', 'evaluation-cards');
+
+        // スコア計算してソート
+        const scoredData = data.map(org => ({
+            ...org,
+            scores: window.calculateEvaluationScores(org),
+            evalRank: window.getEvaluationRank(window.calculateEvaluationScores(org).total)
+        })).sort((a, b) => b.scores.total - a.scores.total);
+
+        scoredData.forEach((org, index) => {
+            const card = cardsContainer.append('div')
+                .attr('class', `evaluation-card rank-${org.evalRank.rank}`)
+                .style('animation-delay', `${index * 0.05}s`)
+                .on('click', () => this.showEvaluationDetail(org));
+
+            // ランクバッジ
+            card.append('div')
+                .attr('class', 'eval-rank-badge')
+                .style('background', org.evalRank.color)
+                .text(org.evalRank.rank);
+
+            // 組織情報
+            const info = card.append('div')
+                .attr('class', 'eval-card-info');
+
+            info.append('div')
+                .attr('class', 'eval-org-name')
+                .text(org.id);
+
+            info.append('div')
+                .attr('class', 'eval-org-category')
+                .text(org.category);
+
+            // スコアバー
+            const scoreBar = card.append('div')
+                .attr('class', 'eval-score-bar');
+
+            const maxScore = 25;
+            const percentage = (org.scores.total / maxScore) * 100;
+
+            scoreBar.append('div')
+                .attr('class', 'eval-score-fill')
+                .style('width', `${percentage}%`)
+                .style('background', `linear-gradient(90deg, ${org.evalRank.color}, ${org.evalRank.color}aa)`);
+
+            scoreBar.append('span')
+                .attr('class', 'eval-score-text')
+                .text(`${org.scores.total}/25`);
+
+            // ミニ軸スコア
+            const miniAxes = card.append('div')
+                .attr('class', 'eval-mini-axes');
+
+            const axes = [
+                { key: 'physical', label: '物理', color: '#00d4ff' },
+                { key: 'urgency', label: '切迫', color: '#ff6b9d' },
+                { key: 'nttAffinity', label: 'NTT', color: '#00ff88' },
+                { key: 'itLiteracy', label: 'IT力', color: '#7b2fff' },
+                { key: 'budget', label: '予算', color: '#ffb800' }
+            ];
+
+            axes.forEach(axis => {
+                const axisDiv = miniAxes.append('div')
+                    .attr('class', 'mini-axis');
+
+                axisDiv.append('span')
+                    .attr('class', 'mini-axis-label')
+                    .text(axis.label);
+
+                axisDiv.append('span')
+                    .attr('class', 'mini-axis-value')
+                    .style('color', org.scores[axis.key] >= 4 ? axis.color : '#8892a6')
+                    .text(org.scores[axis.key]);
+            });
+        });
+
+        // 凡例
+        const legend = wrapper.append('div')
+            .attr('class', 'evaluation-legend');
+
+        const ranks = [
+            { rank: 'S', label: '最優先 (20+)', color: '#ff6b9d' },
+            { rank: 'A', label: '要攻略 (16-19)', color: '#00ff88' },
+            { rank: 'B', label: '検討 (12-15)', color: '#00d4ff' },
+            { rank: 'C', label: '様子見 (8-11)', color: '#ffb800' },
+            { rank: 'D', label: '静観 (0-7)', color: '#8892a6' }
+        ];
+
+        ranks.forEach(r => {
+            const item = legend.append('div')
+                .attr('class', 'legend-item');
+
+            item.append('span')
+                .attr('class', 'eval-rank-mini')
+                .style('background', r.color)
+                .text(r.rank);
+
+            item.append('span')
+                .text(r.label);
+        });
+    }
+
+    showEvaluationDetail(org) {
+        const panel = document.getElementById('panelContent');
+        const scores = org.scores;
+        const evalRank = org.evalRank;
+
+        // レーダーチャートのSVG生成
+        const radarSize = 180;
+        const centerX = radarSize / 2;
+        const centerY = radarSize / 2;
+        const radius = 70;
+
+        const axes = [
+            { key: 'physical', label: '物理適合' },
+            { key: 'urgency', label: '切迫度' },
+            { key: 'nttAffinity', label: 'NTT親和性' },
+            { key: 'itLiteracy', label: '現場IT力' },
+            { key: 'budget', label: '予算規模' }
+        ];
+
+        const angleSlice = (Math.PI * 2) / axes.length;
+
+        // レーダーチャートのパス生成
+        const radarPoints = axes.map((axis, i) => {
+            const value = scores[axis.key] / 5;
+            const angle = angleSlice * i - Math.PI / 2;
+            return {
+                x: centerX + radius * value * Math.cos(angle),
+                y: centerY + radius * value * Math.sin(angle)
+            };
+        });
+
+        const radarPath = radarPoints.map((p, i) =>
+            `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+        ).join(' ') + ' Z';
+
+        // グリッド生成
+        const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
+        const gridPaths = gridLevels.map(level => {
+            const points = axes.map((_, i) => {
+                const angle = angleSlice * i - Math.PI / 2;
+                return {
+                    x: centerX + radius * level * Math.cos(angle),
+                    y: centerY + radius * level * Math.sin(angle)
+                };
+            });
+            return points.map((p, i) =>
+                `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+            ).join(' ') + ' Z';
+        });
+
+        // 軸ラベル位置
+        const labelPoints = axes.map((axis, i) => {
+            const angle = angleSlice * i - Math.PI / 2;
+            return {
+                x: centerX + (radius + 25) * Math.cos(angle),
+                y: centerY + (radius + 25) * Math.sin(angle),
+                label: axis.label,
+                value: scores[axis.key]
+            };
+        });
+
+        panel.innerHTML = `
+            <div class="eval-detail-header">
+                <div class="eval-rank-large" style="background: ${evalRank.color}">${evalRank.rank}</div>
+                <div>
+                    <div class="info-value highlight">${org.id}</div>
+                    <div class="info-label">${evalRank.label} (${scores.total}/25点)</div>
+                </div>
+            </div>
+
+            <div class="radar-chart-container">
+                <svg width="${radarSize}" height="${radarSize}" class="radar-chart">
+                    <!-- グリッド -->
+                    ${gridPaths.map((path, i) => `
+                        <path d="${path}" fill="none" stroke="rgba(255,255,255,${0.1 + i * 0.05})" stroke-width="1"/>
+                    `).join('')}
+                    
+                    <!-- 軸線 -->
+                    ${axes.map((_, i) => {
+            const angle = angleSlice * i - Math.PI / 2;
+            return `<line x1="${centerX}" y1="${centerY}" 
+                                      x2="${centerX + radius * Math.cos(angle)}" 
+                                      y2="${centerY + radius * Math.sin(angle)}" 
+                                      stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
+        }).join('')}
+                    
+                    <!-- データエリア -->
+                    <path d="${radarPath}" fill="${evalRank.color}" fill-opacity="0.3" 
+                          stroke="${evalRank.color}" stroke-width="2"/>
+                    
+                    <!-- データポイント -->
+                    ${radarPoints.map(p => `
+                        <circle cx="${p.x}" cy="${p.y}" r="4" fill="${evalRank.color}"/>
+                    `).join('')}
+                </svg>
+                
+                <!-- 軸ラベル -->
+                <div class="radar-labels">
+                    ${labelPoints.map(p => `
+                        <div class="radar-label" style="left: ${p.x}px; top: ${p.y}px;">
+                            <span class="label-name">${p.label}</span>
+                            <span class="label-value" style="color: ${p.value >= 4 ? evalRank.color : '#8892a6'}">${p.value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="eval-detail-scores">
+                <div class="score-row">
+                    <span class="score-label">① 物理適合</span>
+                    <div class="score-bar-small">
+                        <div class="score-fill-small" style="width: ${scores.physical * 20}%; background: #00d4ff"></div>
+                    </div>
+                    <span class="score-value">${scores.physical}/5</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">② 切迫度</span>
+                    <div class="score-bar-small">
+                        <div class="score-fill-small" style="width: ${scores.urgency * 20}%; background: #ff6b9d"></div>
+                    </div>
+                    <span class="score-value">${scores.urgency}/5</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">③ NTT親和性</span>
+                    <div class="score-bar-small">
+                        <div class="score-fill-small" style="width: ${scores.nttAffinity * 20}%; background: #00ff88"></div>
+                    </div>
+                    <span class="score-value">${scores.nttAffinity}/5</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">④ 現場IT力</span>
+                    <div class="score-bar-small">
+                        <div class="score-fill-small" style="width: ${scores.itLiteracy * 20}%; background: #7b2fff"></div>
+                    </div>
+                    <span class="score-value">${scores.itLiteracy}/5</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">⑤ 予算規模</span>
+                    <div class="score-bar-small">
+                        <div class="score-fill-small" style="width: ${scores.budget * 20}%; background: #ffb800"></div>
+                    </div>
+                    <span class="score-value">${scores.budget}/5</span>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">主要業務</div>
+                <div class="info-value">${org.business || '-'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">AI活用</div>
+                <div class="info-value"><span class="info-badge ${org.ai === 'あり' ? 'badge-high' : 'badge-medium'}">${org.ai}</span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">システム更改</div>
+                <div class="info-value">${org.systemRenewal || '-'}</div>
+            </div>
+        `;
+    }
+
     // ===== ユーティリティ =====
     showTooltip(event, d) {
         const tooltip = document.getElementById('tooltip');
@@ -441,13 +726,18 @@ class VisualizationViews {
         const org = d.data || d;
 
         if (org.id) {
+            const scores = window.calculateEvaluationScores(org);
+            const evalRank = window.getEvaluationRank(scores.total);
             const investmentBadge = org.investment === '極めて高い' ? 'badge-high' : 'badge-medium';
             const aiBadge = org.ai === 'あり' ? 'badge-high' : 'badge-medium';
 
             panel.innerHTML = `
-                <div class="info-item">
-                    <div class="info-label">法人名</div>
-                    <div class="info-value highlight">${org.id}</div>
+                <div class="eval-detail-header">
+                    <div class="eval-rank-large" style="background: ${evalRank.color}">${evalRank.rank}</div>
+                    <div>
+                        <div class="info-value highlight">${org.id}</div>
+                        <div class="info-label">${evalRank.label} (${scores.total}/25点)</div>
+                    </div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">法人種別</div>
@@ -484,3 +774,4 @@ class VisualizationViews {
 
 // グローバルインスタンス
 window.visualizationViews = new VisualizationViews();
+

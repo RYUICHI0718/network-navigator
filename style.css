@@ -219,6 +219,280 @@ body {
     text-align: center;
 }
 
+/* ===== 5軸評価ビュー ===== */
+.evaluation-wrapper {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.evaluation-header {
+    margin-bottom: 16px;
+}
+
+.evaluation-header h3 {
+    font-size: 1.2rem;
+    color: var(--accent-primary);
+    margin-bottom: 4px;
+}
+
+.evaluation-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.evaluation-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.evaluation-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease-out forwards;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.evaluation-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 20px var(--glow-primary);
+    transform: translateY(-2px);
+}
+
+.evaluation-card.rank-S {
+    border-left: 4px solid #ff6b9d;
+}
+
+.evaluation-card.rank-A {
+    border-left: 4px solid #00ff88;
+}
+
+.evaluation-card.rank-B {
+    border-left: 4px solid #00d4ff;
+}
+
+.evaluation-card.rank-C {
+    border-left: 4px solid #ffb800;
+}
+
+.evaluation-card.rank-D {
+    border-left: 4px solid #8892a6;
+}
+
+.eval-rank-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.eval-card-info {
+    flex: 1;
+}
+
+.eval-org-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.eval-org-category {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.eval-score-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.eval-score-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.eval-score-text {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+}
+
+.eval-mini-axes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mini-axis {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.mini-axis-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+.mini-axis-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.evaluation-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    background: rgba(20, 26, 38, 0.5);
+    border-radius: 8px;
+}
+
+.eval-rank-mini {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: white;
+    margin-right: 6px;
+}
+
+/* ===== 評価詳細パネル ===== */
+.eval-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.eval-rank-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.radar-chart-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 16px auto;
+}
+
+.radar-chart {
+    display: block;
+}
+
+.radar-labels {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.radar-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 0.7rem;
+}
+
+.label-name {
+    display: block;
+    color: var(--text-secondary);
+}
+
+.label-value {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.eval-detail-scores {
+    margin: 12px 0;
+}
+
+.score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.score-label {
+    width: 80px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.score-bar-small {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.score-fill-small {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.score-value {
+    width: 30px;
+    text-align: right;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 /* ===== Controls ===== */
 .controls {
     display: flex;
