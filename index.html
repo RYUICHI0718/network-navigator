@@ -21,11 +21,13 @@
         <div class="view-tabs">
             <button class="view-tab active" data-view="network">🌐 ネットワーク</button>
             <button class="view-tab" data-view="evaluation">🎯 5軸評価</button>
+            <button class="view-tab" data-view="statistics">📊 統計分析</button>
             <button class="view-tab" data-view="treemap">📊 ツリーマップ</button>
             <button class="view-tab" data-view="bubble">🫧 バブル</button>
             <button class="view-tab" data-view="scatter">📈 散布図</button>
             <button class="view-tab" data-view="ranking">🏆 ランキング</button>
         </div>
+
 
         <div class="controls">
             <div class="control-group">
@@ -64,6 +66,8 @@
                 </div>
                 <!-- 5軸評価ビュー -->
                 <div class="view-content" id="evaluationView"></div>
+                <!-- 統計分析ビュー -->
+                <div class="view-content" id="statisticsView"></div>
                 <!-- ツリーマップビュー -->
                 <div class="view-content" id="treemapView"></div>
                 <!-- バブルチャートビュー -->
@@ -168,6 +172,9 @@
             switch (viewName) {
                 case 'evaluation':
                     vv.renderEvaluation(container);
+                    break;
+                case 'statistics':
+                    vv.renderStatistics(container);
                     break;
                 case 'treemap':
                     vv.renderTreemap(container);

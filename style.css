@@ -1047,3 +1047,587 @@ body {
         border-top: 1px solid var(--border-color);
     }
 }
+
+/* ===== 統計分析ビュー ===== */
+.statistics-wrapper {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.stats-header {
+    margin-bottom: 20px;
+}
+
+.stats-header h3 {
+    font-size: 1.2rem;
+    color: var(--accent-primary);
+    margin-bottom: 4px;
+}
+
+.stats-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.stats-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* サマリーカード */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 212, 255, 0.05) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 20px var(--glow-primary);
+    transform: translateY(-2px);
+}
+
+.stat-card-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-card-icon {
+    font-size: 1.1rem;
+}
+
+.stat-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-main-value {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.stat-main-value .label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.stat-main-value .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.stat-main-value .unit {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-sub-values {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.stat-sub-values>div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.stat-sub-values .label {
+    color: var(--text-secondary);
+}
+
+.stat-sub-values .value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* 詳細統計テーブル */
+.stats-table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.stats-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.stats-detail-table th,
+.stats-detail-table td {
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-detail-table th {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stats-detail-table td.stat-label {
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stats-detail-table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+/* ヒストグラム */
+.histogram-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.histogram-selector {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.histogram-selector:hover,
+.histogram-selector:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+}
+
+.histogram-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.histogram-bar {
+    transition: fill-opacity 0.2s ease;
+}
+
+.histogram-bar:hover {
+    fill-opacity: 1;
+}
+
+.histogram-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(0, 212, 255, 0.05);
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.histogram-stats span {
+    color: var(--text-primary);
+}
+
+/* 相関行列 */
+.correlation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.correlation-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 0.75rem;
+}
+
+.correlation-legend .corr-neg {
+    color: #ff6b9d;
+}
+
+.correlation-legend .corr-pos {
+    color: #00ff88;
+}
+
+.corr-gradient {
+    width: 120px;
+    height: 12px;
+    background: linear-gradient(90deg, #ff6b9d, #1a1f2e, #00ff88);
+    border-radius: 6px;
+}
+
+/* ===== カテゴリ別統計 ===== */
+.category-stats-container {
+    margin-top: 16px;
+}
+
+.category-legend-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.category-legend-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
+}
+
+.category-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+}
+
+.category-legend-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-left-width: 4px;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.category-legend-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.cat-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.category-legend-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.category-chart-title,
+.category-table-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin: 20px 0 12px;
+}
+
+.category-chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.category-var-selector {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.category-var-selector:hover,
+.category-var-selector:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+}
+
+.category-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.category-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.category-bar-label {
+    width: 140px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.category-bar-container {
+    flex: 1;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.category-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.category-bar-value {
+    width: 100px;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* カテゴリ別テーブル */
+.category-table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.category-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.category-detail-table th,
+.category-detail-table td {
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.category-detail-table th {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.category-detail-table .cat-name-cell {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-detail-table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+/* ===== PCA分析 ===== */
+.pca-container {
+    margin-top: 16px;
+}
+
+.pca-description {
+    background: rgba(123, 47, 255, 0.1);
+    border: 1px solid rgba(123, 47, 255, 0.3);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.pca-description p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.pca-note {
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+}
+
+.pca-error {
+    color: var(--accent-danger);
+    padding: 20px;
+    text-align: center;
+}
+
+.pca-variance-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.pca-variance-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
+}
+
+.pca-variance-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pca-variance-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pca-pc-label {
+    width: 40px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.pca-bar-container {
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pca-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.pca-variance-value {
+    width: 60px;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.pca-cumulative {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--accent-success);
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.pca-chart-title,
+.pca-loadings-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin: 20px 0 12px;
+}
+
+.pca-chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+/* 因子負荷量テーブル */
+.pca-loadings-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.pca-loadings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.pca-loadings-table th,
+.pca-loadings-table td {
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pca-loadings-table th {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pca-loadings-table .loading-var-name {
+    text-align: left;
+    color: var(--text-primary);
+}
+
+.pca-loadings-table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.pca-interpretation {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.pca-interpretation p {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.pca-interpretation strong {
+    color: var(--accent-primary);
+}
